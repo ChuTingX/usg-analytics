@@ -1,0 +1,73 @@
+data:
+  input_csv: data/raw/FINAL_USO.csv
+  date_column: Date
+  parse_dates: true
+  index_as_date: true
+  trend_suffix: "_Trend"
+
+features:
+  target: "Adj Close"
+  variables:
+    - "Adj Close"
+    - "SP_close"
+    - "DJ_close"
+    - "USDI_Price"
+    - "EU_Price"
+    - "GDX_Close"
+    - "SF_Price"
+    - "PLT_Price"
+    - "PLD_Price"
+    - "RHO_PRICE"
+    - "USO_Close"     # column name from dataset kept as-is
+    - "OF_Price"
+    - "OS_Price"
+  rolling_means: [7, 30]
+  lag_all_predictors: true
+
+cv:
+  strategy: "kfold"   # or "timeseries"
+  n_splits: 10
+  shuffle: true
+  random_state: 42
+
+models:
+  random_forest:
+    # Defaults used if no tuned params file is present
+    params:
+      n_estimators: 200
+      max_depth: null
+      max_features: "sqrt"
+      min_samples_split: 2
+      min_samples_leaf: 1
+      bootstrap: true
+      random_state: 42
+
+    tuning:
+      enabled: true           # set false to skip tuning
+      scoring: "neg_mean_squared_error"
+      n_jobs: -1
+      verbose: 1
+      # 10-fold KFold is taken from cv.* at top-level config
+      grid:
+        n_estimators: [100, 200, 300, 500]
+        max_depth: [null, 15, 25, 35]
+        max_features: ["sqrt", 0.5, 1.0]
+        min_samples_split: [2, 5, 10]
+        min_samples_leaf: [1, 2]
+        bootstrap: [true]
+
+
+  lasso:
+    alphas_logspace: [-5, 2, 20]
+    max_iter: 10000
+    random_state: 42
+
+  ridge:
+    alphas_logspace: [-5, 2, 20]
+    max_iter: 10000
+    random_state: 42
+
+output:
+  processed_dir: data/processed
+  reports_dir: reports
+  figures_dir: reports/figures
