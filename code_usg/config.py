@@ -1,7 +1,10 @@
 from __future__ import annotations
-import yaml
+
 from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
+import yaml
+
 
 @dataclass
 class DataConfig:
@@ -11,6 +14,7 @@ class DataConfig:
     index_as_date: bool = True
     trend_suffix: str = "_Trend"
 
+
 @dataclass
 class FeatureConfig:
     target: str = "Adj Close"
@@ -18,18 +22,21 @@ class FeatureConfig:
     rolling_means: List[int] = field(default_factory=lambda: [7, 30])
     lag_all_predictors: bool = True
 
+
 @dataclass
 class CVConfig:
-    strategy: str = "kfold"     # 'kfold' or 'timeseries'
+    strategy: str = "kfold"  # 'kfold' or 'timeseries'
     n_splits: int = 10
     shuffle: bool = True
     random_state: Optional[int] = 42
+
 
 @dataclass
 class OutputConfig:
     processed_dir: str = "data/processed"
     reports_dir: str = "reports"
     figures_dir: str = "reports/figures"
+
 
 @dataclass
 class MasterConfig:
@@ -38,6 +45,7 @@ class MasterConfig:
     cv: CVConfig
     models: Dict[str, Any]
     output: OutputConfig
+
 
 def load_config(path: str) -> MasterConfig:
     with open(path, "r") as f:

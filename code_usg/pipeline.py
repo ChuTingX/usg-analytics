@@ -1,14 +1,14 @@
 # code_usg/pipeline.py
-import os
 import json
-from typing import Dict, Any
+import os
+from typing import Dict
 
 from .config import load_config
+from .evaluation import run_metadata_dict, save_pred_vs_actual, save_residuals
+from .features import add_target_rollings, drop_trend_columns, make_lagged, select_variables
 from .io_utils import load_dataframe
-from .features import drop_trend_columns, select_variables, add_target_rollings, make_lagged
 from .modeling import run_modeling_suite
-from .plots import save_corr_heatmap, save_timeseries, save_multi_timeseries
-from .evaluation import save_pred_vs_actual, save_residuals, run_metadata_dict
+from .plots import save_corr_heatmap, save_multi_timeseries, save_timeseries
 from .seed import seed_everything
 
 
@@ -44,7 +44,9 @@ def run_eda(cfg_path: str) -> Dict[str, str]:
             f"{cfg.features.target} Over Time",
         )
 
-    other_cols = [c for c in cfg.features.variables if c != cfg.features.target and c in df_sel.columns]
+    other_cols = [
+        c for c in cfg.features.variables if c != cfg.features.target and c in df_sel.columns
+    ]
     if other_cols:
         save_multi_timeseries(
             df_sel,

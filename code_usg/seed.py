@@ -1,4 +1,8 @@
-import os, random, numpy as np
+import os
+import random
+
+import numpy as np
+
 
 def seed_everything(seed: int | None = 42):
     if seed is None:

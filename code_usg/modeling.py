@@ -3,16 +3,16 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Any, Dict, List
 
 import numpy as np
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression, Lasso, Ridge
-from sklearn.model_selection import KFold, GridSearchCV, TimeSeriesSplit
-from sklearn.metrics import mean_squared_error, make_scorer
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
 from mlxtend.feature_selection import ExhaustiveFeatureSelector as EFS
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import Lasso, LinearRegression, Ridge
+from sklearn.metrics import make_scorer, mean_squared_error
+from sklearn.model_selection import GridSearchCV, KFold, TimeSeriesSplit
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
 
 # --- helpers to read dict or dataclass-like config ---
@@ -20,6 +20,7 @@ def _field(obj, name, default=None):
     if isinstance(obj, dict):
         return obj.get(name, default)
     return getattr(obj, name, default)
+
 
 def _nested(cfg, path: List[str], default=None):
     cur = cfg
@@ -30,7 +31,9 @@ def _nested(cfg, path: List[str], default=None):
     return cur
 
 
-def build_cv(strategy: str = "kfold", n_splits: int = 10, shuffle: bool = True, random_state: int | None = 42):
+def build_cv(
+    strategy: str = "kfold", n_splits: int = 10, shuffle: bool = True, random_state: int | None = 42
+):
     """Return a CV splitter."""
     if str(strategy).lower() == "timeseries":
         return TimeSeriesSplit(n_splits=n_splits)
@@ -99,7 +102,7 @@ def all_subset_lr_cv(X: np.ndarray, y: np.ndarray, cv, feature_names: List[str])
         scoring=neg_mse_scorer,
         cv=cv,
         n_jobs=-1,
-        print_progress=False,   # or verbose=0 depending on mlxtend version
+        print_progress=False,  # or verbose=0 depending on mlxtend version
     ).fit(X, y)
 
     best_idx = efs.best_idx_
@@ -124,11 +127,15 @@ def lasso_ridge_cv(model_type: str, X: np.ndarray, y: np.ndarray, cv, model_conf
     alphas = np.logspace(al_start, al_end, al_num)
 
     if model_type == "lasso":
-        estimator = Lasso(max_iter=_field(model_conf, "max_iter", 10000),
-                          random_state=_field(model_conf, "random_state", 42))
+        estimator = Lasso(
+            max_iter=_field(model_conf, "max_iter", 10000),
+            random_state=_field(model_conf, "random_state", 42),
+        )
     else:
-        estimator = Ridge(max_iter=_field(model_conf, "max_iter", 10000),
-                          random_state=_field(model_conf, "random_state", 42))
+        estimator = Ridge(
+            max_iter=_field(model_conf, "max_iter", 10000),
+            random_state=_field(model_conf, "random_state", 42),
+        )
 
     pipe = Pipeline([("scaler", StandardScaler()), ("model", estimator)])
     grid = {"model__alpha": alphas}
@@ -165,9 +172,12 @@ def ensemble_cv(
         X_train, X_test = X[train_i], X[test_i]
         y_train, y_test = y[train_i], y[test_i]
 
-        rf_est.fit(X_train, y_train);   pred_rf = rf_est.predict(X_test)
-        lasso_est.fit(X_train, y_train); pred_lasso = lasso_est.predict(X_test)
-        ridge_est.fit(X_train, y_train); pred_ridge = ridge_est.predict(X_test)
+        rf_est.fit(X_train, y_train)
+        pred_rf = rf_est.predict(X_test)
+        lasso_est.fit(X_train, y_train)
+        pred_lasso = lasso_est.predict(X_test)
+        ridge_est.fit(X_train, y_train)
+        pred_ridge = ridge_est.predict(X_test)
 
         X_train_lr = X_train[:, best_subset_idx]
         X_test_lr = X_test[:, best_subset_idx]
@@ -187,12 +197,16 @@ def run_modeling_suite(
     cfg,
     reports_dir: str | Path = "reports",
 ):
-    """Run baseline, RF, all-subset OLS, Lasso, Ridge, and ensemble; return metrics and fitted objects."""
+    """
+    Run baseline, RF, all-subset OLS, Lasso, Ridge, and ensemble.
+    Returns metrics and fitted objects.
+    """
+
     # CV config (works with dict or object)
     cv_strategy = _nested(cfg, ["cv", "strategy"], "kfold")
     cv_n_splits = int(_nested(cfg, ["cv", "n_splits"], 10))
-    cv_shuffle  = bool(_nested(cfg, ["cv", "shuffle"], True))
-    cv_random   = int(_nested(cfg, ["cv", "random_state"], 42))
+    cv_shuffle = bool(_nested(cfg, ["cv", "shuffle"], True))
+    cv_random = int(_nested(cfg, ["cv", "random_state"], 42))
 
     cv = build_cv(cv_strategy, cv_n_splits, cv_shuffle, cv_random)
 
