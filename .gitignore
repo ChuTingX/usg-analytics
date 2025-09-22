@@ -16,3 +16,4 @@ reports/*.json
 .DS_Store
 .ruff_cache/
 .pytest_cache/
+/.idea
