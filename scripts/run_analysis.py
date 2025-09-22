@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+
 from code_usg.pipeline import run_analysis
 
 if __name__ == "__main__":
