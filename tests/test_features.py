@@ -1,6 +1,7 @@
-import pandas as pd
-from code_usg.features import drop_trend_columns, select_variables, add_target_rollings, make_lagged
+from code_usg.features import add_target_rollings, drop_trend_columns, make_lagged, select_variables
+
 from .conftest import make_synth_df
+
 
 def test_feature_pipeline_basic():
     df = make_synth_df()

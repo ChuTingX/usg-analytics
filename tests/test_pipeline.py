@@ -1,23 +1,40 @@
-import os, yaml, json, tempfile
+import json
+import os
+
+import yaml
+
+from code_usg.pipeline import run_analysis, run_eda
+
 from .conftest import write_synth_csv
-from code_usg.pipeline import run_eda, run_analysis
+
 
 def test_end_to_end_pipeline(tmp_path):
     raw = tmp_path / "raw"
     proc = tmp_path / "proc"
     rep = tmp_path / "rep"
     fig = rep / "fig"
-    raw.mkdir(); proc.mkdir(); fig.mkdir(parents=True, exist_ok=True)
+    raw.mkdir()
+    proc.mkdir()
+    fig.mkdir(parents=True, exist_ok=True)
     csv_path = write_synth_csv(str(tmp_path))
 
     cfg_yaml = {
-        "data": {"input_csv": str(csv_path), "date_column": "Date", "parse_dates": True, "index_as_date": True, "trend_suffix": "_Trend"},
-        "features": {"target": "Adj Close", "variables": ["Adj Close", "SP_close", "DJ_close", "USO_Close"]},
+        "data": {
+            "input_csv": str(csv_path),
+            "date_column": "Date",
+            "parse_dates": True,
+            "index_as_date": True,
+            "trend_suffix": "_Trend",
+        },
+        "features": {
+            "target": "Adj Close",
+            "variables": ["Adj Close", "SP_close", "DJ_close", "USO_Close"],
+        },
         "cv": {"strategy": "kfold", "n_splits": 3, "shuffle": True, "random_state": 1},
         "models": {
             "random_forest": {"n_estimators": 20, "random_state": 1},
-            "lasso": {"alphas_logspace":[-4,1,5], "max_iter": 5000, "random_state": 1},
-            "ridge": {"alphas_logspace":[-4,1,5], "max_iter": 5000, "random_state": 1}
+            "lasso": {"alphas_logspace": [-4, 1, 5], "max_iter": 5000, "random_state": 1},
+            "ridge": {"alphas_logspace": [-4, 1, 5], "max_iter": 5000, "random_state": 1},
         },
         "output": {"processed_dir": str(proc), "reports_dir": str(rep), "figures_dir": str(fig)},
     }
