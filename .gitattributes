@@ -1,0 +1,13 @@
+* text=auto
+
+# keep LF in repo for source/config
+*.py   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.toml text eol=lf
+*.md   text eol=lf
+*.csv  text eol=lf
+*.sh   text eol=lf
+
+# allow CRLF for Windows scripts if needed
+*.bat  text eol=crlf
